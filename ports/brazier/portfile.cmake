@@ -1,30 +1,24 @@
-set(SOURCE_PATH "C:/Users/Admin/source/repos/brazier")
+set(VCPKG_POLICY_EMPTY_PACKAGE enabled)
+set(VCPKG_POLICY_EMPTY_INCLUDE_FOLDER enabled)
 
-if(NOT EXISTS "${SOURCE_PATH}")
-    message(FATAL_ERROR "Source directory not found: ${SOURCE_PATH}")
-endif()
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/brazierConfig.cmake"
+     DESTINATION "${CURRENT_PACKAGES_DIR}/share/brazier")
 
-vcpkg_cmake_configure(
-    SOURCE_PATH "${SOURCE_PATH}/brazier"
-    OPTIONS -DBUILD_TESTS=OFF  
+file(READ "${CMAKE_CURRENT_LIST_DIR}/brazierConfigVersion.cmake.in" _ver_template)
+string(REPLACE "@VERSION@" "0.1.6" _ver_content "${_ver_template}")
+file(WRITE "${CURRENT_PACKAGES_DIR}/share/brazier/brazierConfigVersion.cmake"
+     "${_ver_content}")
+
+file(GLOB LICENSE_FILES
+    "${CMAKE_CURRENT_LIST_DIR}/LICENSE*"
+    "${CMAKE_CURRENT_LIST_DIR}/COPYING*"
+    "${CMAKE_CURRENT_LIST_DIR}/*.txt"
 )
 
-vcpkg_cmake_install()
-
-vcpkg_cmake_config_fixup(CONFIG_PATH share/brazier)
-
-file(REMOVE_RECURSE 
-    "${CURRENT_PACKAGES_DIR}/debug/include"
-    "${CURRENT_PACKAGES_DIR}/debug/share"
-)
-
-if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
-    file(REMOVE_RECURSE 
-        "${CURRENT_PACKAGES_DIR}/bin"
-        "${CURRENT_PACKAGES_DIR}/debug/bin"
-    )
+if(NOT LICENSE_FILES)
+    message(FATAL_ERROR
+        "No license files found in ${CMAKE_CURRENT_LIST_DIR}. "
+        "Copy LICENSE and LGPL-3.0-or-later.txt into ports/brazier/")
 endif()
 
-set(VCPKG_POLICY_DLLS_WITHOUT_EXPORTS enabled)
-
-vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
+vcpkg_install_copyright(FILE_LIST ${LICENSE_FILES})

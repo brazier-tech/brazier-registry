@@ -3,31 +3,12 @@
   "version": "0.1.6",
   "license": "LGPL-3.0-or-later",
   "description": "Modern C++ MVC framework designed for creating high-performance asynchronous APIs. The framework combines the power of Boost.Asio with modern C++20/23 features",
-  "homepage": "https://github.com/lev2p1/brazier",
+  "homepage": "https://github.com/brazier-tech/brazier",
   "dependencies": [
-    {
-      "name": "vcpkg-cmake",
-      "host": true
-    },
-    {
-      "name": "vcpkg-cmake-config",
-      "host": true
-    },
-    "boost-config",
-    "boost-asio",
-    "boost-beast",
-    "boost-system",
-    "boost-thread",
-    "boost-filesystem",
-    "boost-variant",
-    "fmt",
-    "hiredis",
-    "jwt-cpp",
-    "libpq",
-    "nlohmann-json",
-    "zlib",
-    "picojson",
-    "gtest"
+    { "name": "vcpkg-cmake", "host": true },
+    { "name": "vcpkg-cmake-config", "host": true },
+    "brazier-core",
+    "brazier-orm"
   ],
   "supports": "x64 & (windows | linux | osx)"
 }
