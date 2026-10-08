@@ -19,16 +19,12 @@
     "boost-system",
     "boost-thread",
     "boost-filesystem",
-    "boost-variant",
     "brazier-logger",
     "fmt",
     "hiredis",
-    "jwt-cpp",
-    "libpq",
     "nlohmann-json",
     "zlib",
-    "picojson",
-    "gtest"
+    "openssl"
   ],
   "supports": "x64 & (windows | linux | osx)"
 }
