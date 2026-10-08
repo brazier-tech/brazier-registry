@@ -10,14 +10,14 @@ file(WRITE "${CURRENT_PACKAGES_DIR}/share/brazier/brazierConfigVersion.cmake"
      "${_ver_content}")
 
 file(GLOB LICENSE_FILES
-    "${CMAKE_CURRENT_LIST_DIR}/LICENSE*"
-    "${CMAKE_CURRENT_LIST_DIR}/COPYING*"
-    "${CMAKE_CURRENT_LIST_DIR}/*.txt"
+    "${SOURCE_PATH}/LICENSE*"
+    "${SOURCE_PATH}/COPYING*"
+    "${SOURCE_PATH}/*.txt"
 )
 
 if(NOT LICENSE_FILES)
     message(FATAL_ERROR
-        "No license files found in ${CMAKE_CURRENT_LIST_DIR}. "
+        "No license files found in ${SOURCE_PATH}. "
         "Copy LICENSE and LGPL-3.0-or-later.txt into ports/brazier/")
 endif()
 
