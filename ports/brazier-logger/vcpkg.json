@@ -1,9 +1,9 @@
 {
-  "name": "brazier-orm",
+  "name": "brazier-logger",
   "version": "0.1.0",
   "license": "LGPL-3.0-or-later",
-  "description": "ORM module for the brazier C++ MVC framework",
-  "homepage": "https://github.com/brazier-tech/brazier-orm",
+  "description": "Logging library for the brazier framework",
+  "homepage": "https://github.com/brazier-tech/brazier-logger",
   "dependencies": [
     {
       "name": "vcpkg-cmake",
@@ -12,10 +12,7 @@
     {
       "name": "vcpkg-cmake-config",
       "host": true
-    },
-    "brazier-logger",
-    "libpq",
-    "nlohmann-json"
+    }
   ],
   "supports": "x64 & (windows | linux | osx)"
 }

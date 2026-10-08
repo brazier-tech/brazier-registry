@@ -1,6 +1,6 @@
 include(CMakeFindDependencyMacro)
 
-set(brazier_known_components core orm)
+set(brazier_known_components logger core orm)
 
 foreach(_comp IN LISTS brazier_FIND_COMPONENTS)
     if(NOT _comp IN_LIST brazier_known_components)
@@ -10,6 +10,15 @@ foreach(_comp IN LISTS brazier_FIND_COMPONENTS)
         return()
     endif()
 endforeach()
+
+if(NOT brazier_FIND_COMPONENTS OR "logger" IN_LIST brazier_FIND_COMPONENTS)
+    find_dependency(brazier-logger CONFIG)
+    if(TARGET brazier::logger)
+        set(brazier_logger_FOUND TRUE)
+    else()
+        set(brazier_logger_FOUND FALSE)
+    endif()
+endif()
 
 if(NOT brazier_FIND_COMPONENTS OR "core" IN_LIST brazier_FIND_COMPONENTS)
     find_dependency(brazier-core CONFIG)
@@ -33,6 +42,9 @@ if(NOT TARGET brazier::brazier)
     add_library(brazier::brazier INTERFACE IMPORTED GLOBAL)
 
     set(_brazier_libs)
+    if(TARGET brazier::logger)
+        list(APPEND _brazier_libs brazier::logger)
+    endif()
     if(TARGET brazier::core)
         list(APPEND _brazier_libs brazier::core)
     endif()

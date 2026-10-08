@@ -20,6 +20,7 @@
     "boost-thread",
     "boost-filesystem",
     "boost-variant",
+    "brazier-logger",
     "fmt",
     "hiredis",
     "jwt-cpp",
