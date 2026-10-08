@@ -16,6 +16,5 @@
     "brazier-logger",
     "libpq",
     "nlohmann-json"
-  ],
-  "supports": "x64 & (windows | linux | osx)"
+  ]
 }

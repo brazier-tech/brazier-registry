@@ -25,6 +25,5 @@
     "nlohmann-json",
     "zlib",
     "openssl"
-  ],
-  "supports": "x64 & (windows | linux | osx)"
+  ]
 }

@@ -10,6 +10,5 @@
     "brazier-core",
     "brazier-orm",
     "brazier-logger"
-  ],
-  "supports": "x64 & (windows | linux | osx)"
+  ]
 }
