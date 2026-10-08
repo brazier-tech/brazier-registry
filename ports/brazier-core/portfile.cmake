@@ -11,6 +11,7 @@ message(STATUS "brazier-core: REF = ${BRAZIER_CORE_REF}")
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/source/brazier/CMakeLists.txt")
     message(STATUS "brazier-core: using LOCAL source (editable mode)")
     set(SOURCE_PATH "${CMAKE_CURRENT_LIST_DIR}/source/brazier")
+    set(BRAZIER_ROOT "${CMAKE_CURRENT_LIST_DIR}/source")
 else()
     message(STATUS "brazier-core: cloning from git (ref=${BRAZIER_CORE_REF})")
     vcpkg_from_git(
@@ -20,6 +21,7 @@ else()
         HEAD_REF master
     )
     set(SOURCE_PATH "${GIT_SOURCE}/brazier")
+    set(BRAZIER_ROOT "${GIT_SOURCE}")
 endif()
 
 vcpkg_cmake_configure(
@@ -41,10 +43,15 @@ file(REMOVE_RECURSE
 )
 
 file(GLOB LICENSE_FILES
-    "${SOURCE_PATH}/LICENSE*"
-    "${SOURCE_PATH}/COPYING*"
-    "${SOURCE_PATH}/LGPL*.txt"
-    "${SOURCE_PATH}/GPL*.txt"
+    "${BRAZIER_ROOT}/LICENSE*"
+    "${BRAZIER_ROOT}/COPYING*"
+    "${BRAZIER_ROOT}/LGPL*.txt"
+    "${BRAZIER_ROOT}/GPL*.txt"
 )
+
+if(NOT LICENSE_FILES)
+    message(FATAL_ERROR
+        "No license files found in ${BRAZIER_ROOT}")
+endif()
 
 vcpkg_install_copyright(FILE_LIST ${LICENSE_FILES})
