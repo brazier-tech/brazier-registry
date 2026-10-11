@@ -32,6 +32,21 @@ copy_licenses() {
     shopt -u nullglob
 }
 
+# Vcpkg hashes all files in the port dir; overwriting this marker forces
+# a new ABI hash on every run, so ports are rebuilt from current sources.
+# We use >> / overwrite semantics: the file always contains a single line.
+touch_marker() {
+    local port_dir="$1"
+    if [ ! -d "$port_dir" ]; then
+        echo "Warning: port dir not found: $port_dir"
+        return
+    fi
+    # Nanoseconds guarantee uniqueness even on very fast consecutive runs.
+    printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$(date '+%N')" \
+        > "$port_dir/_abi_marker.txt"
+    echo "Touched ABI marker: $port_dir/_abi_marker.txt"
+}
+
 clean_port() {
     local port="$1"
     echo "Cleaning $port..."
@@ -55,7 +70,7 @@ clean_archives() {
     done
 }
 
-# --- junctions/symlinks ---
+# --- symlinks ---
 make_symlink "${PORTS_PATH}/brazier-core/source"   "${SOURCES_DIR}/brazier"
 make_symlink "${PORTS_PATH}/brazier-orm/source"    "${SOURCES_DIR}/brazierORM"
 make_symlink "${PORTS_PATH}/brazier-logger/source" "${SOURCES_DIR}/brazier-logger"
@@ -68,6 +83,12 @@ copy_licenses "${SOURCES_DIR}/brazier-logger" "${PORTS_PATH}/brazier-logger"
 
 # --- helpers ---
 "$VCPKG_PATH/vcpkg" install vcpkg-cmake vcpkg-cmake-config --recurse
+
+# --- invalidate ABI hash so vcpkg rebuilds from current sources ---
+touch_marker "${PORTS_PATH}/brazier"
+touch_marker "${PORTS_PATH}/brazier-core"
+touch_marker "${PORTS_PATH}/brazier-orm"
+touch_marker "${PORTS_PATH}/brazier-logger"
 
 # --- full clean for each brazier port ---
 clean_archives

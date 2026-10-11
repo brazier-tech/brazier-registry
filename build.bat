@@ -26,6 +26,12 @@ call :copy_licenses "%SOURCES_DIR%\brazier-logger" "%PORTS_PATH%\brazier-logger"
 REM --- helpers ---
 "%VCPKG_PATH%\vcpkg.exe" install vcpkg-cmake vcpkg-cmake-config --recurse
 
+REM --- invalidate ABI hash so vcpkg rebuilds from current sources ---
+call :touch_marker "%PORTS_PATH%\brazier"
+call :touch_marker "%PORTS_PATH%\brazier-core"
+call :touch_marker "%PORTS_PATH%\brazier-orm"
+call :touch_marker "%PORTS_PATH%\brazier-logger"
+
 REM --- full clean for each brazier port ---
 call :clean_archives
 call :clean_port brazier
@@ -84,6 +90,19 @@ for %%F in ("%SRC%\LICENSE*" "%SRC%\COPYING*" "%SRC%\LGPL*.txt" "%SRC%\GPL*.txt"
         echo Copied license: %%~nxF
     )
 )
+goto :eof
+
+REM ---- helper: overwrite ABI marker file inside a port directory ----
+REM Vcpkg hashes all files in the port dir; touching this marker forces
+REM a new ABI hash on every run, so ports are rebuilt from current sources.
+:touch_marker
+set "PORT_DIR=%~1"
+if not exist "%PORT_DIR%" (
+    echo Warning: port dir not found: %PORT_DIR%
+    goto :eof
+)
+> "%PORT_DIR%\_abi_marker.txt" echo %DATE% %TIME% %RANDOM%
+echo Touched ABI marker: %PORT_DIR%\_abi_marker.txt
 goto :eof
 
 REM ---- helper: clean buildtrees and packages for a port ----
