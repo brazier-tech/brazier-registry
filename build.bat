@@ -12,6 +12,22 @@ for %%I in ("%SCRIPT_DIR%.")        do set "SCRIPT_DIR=%%~fI"
 for %%I in ("%SCRIPT_DIR%\..")      do set "SOURCES_DIR=%%~fI"
 set PORTS_PATH=%SCRIPT_DIR%\ports
 
+REM --- target selection ---
+set "TARGET=%~1"
+if "%TARGET%"=="" set "TARGET=brazier"
+
+set "VALID=0"
+if /i "%TARGET%"=="brazier"        set "VALID=1"
+if /i "%TARGET%"=="brazier-core"   set "VALID=1"
+if /i "%TARGET%"=="brazier-orm"    set "VALID=1"
+if /i "%TARGET%"=="brazier-logger" set "VALID=1"
+if "%VALID%"=="0" (
+    echo Unknown target: %TARGET%
+    echo Valid: brazier ^| brazier-core ^| brazier-orm ^| brazier-logger
+    exit /b 1
+)
+echo === Target: %TARGET% ===
+
 REM --- junctions ---
 call :make_junction "%PORTS_PATH%\brazier-core\source"   "%SOURCES_DIR%\brazier"
 call :make_junction "%PORTS_PATH%\brazier-orm\source"    "%SOURCES_DIR%\brazierORM"
@@ -32,27 +48,32 @@ REM --- helpers ---
 "%VCPKG_PATH%\vcpkg.exe" install vcpkg-cmake vcpkg-cmake-config --recurse
 
 REM --- invalidate ABI hash so vcpkg rebuilds from current sources ---
-call :touch_marker "%PORTS_PATH%\brazier"
-call :touch_marker "%PORTS_PATH%\brazier-core"
-call :touch_marker "%PORTS_PATH%\brazier-orm"
-call :touch_marker "%PORTS_PATH%\brazier-logger"
+if /i "%TARGET%"=="brazier" (
+    call :touch_marker "%PORTS_PATH%\brazier"
+    call :touch_marker "%PORTS_PATH%\brazier-core"
+    call :touch_marker "%PORTS_PATH%\brazier-orm"
+    call :touch_marker "%PORTS_PATH%\brazier-logger"
+) else (
+    call :touch_marker "%PORTS_PATH%\%TARGET%"
+)
 
-REM --- full clean for each brazier port ---
-call :clean_archives
-call :clean_port brazier
-call :clean_port brazier-core
-call :clean_port brazier-orm
-call :clean_port brazier-logger
+REM --- clean ---
+if /i "%TARGET%"=="brazier" (
+    call :clean_archives
+    call :clean_port brazier
+    call :clean_port brazier-core
+    call :clean_port brazier-orm
+    call :clean_port brazier-logger
+) else (
+    call :clean_port %TARGET%
+)
 
 REM --- remove old installs ---
-"%VCPKG_PATH%\vcpkg.exe" remove brazier-logger:x64-windows --recurse --purge
-"%VCPKG_PATH%\vcpkg.exe" remove brazier-orm:x64-windows    --recurse --purge
-"%VCPKG_PATH%\vcpkg.exe" remove brazier-core:x64-windows   --recurse --purge
-"%VCPKG_PATH%\vcpkg.exe" remove brazier:x64-windows        --recurse --purge
+"%VCPKG_PATH%\vcpkg.exe" remove %TARGET%:x64-windows --recurse --purge 2>nul
 
-REM --- install all brazier packages in one plan ---
+REM --- install ---
 "%VCPKG_PATH%\vcpkg.exe" install --overlay-ports="%PORTS_PATH%" ^
-    brazier --recurse --editable --no-binarycaching
+    %TARGET% --recurse --editable --no-binarycaching
 
 endlocal
 goto :eof
@@ -60,7 +81,7 @@ goto :eof
 REM ---- helper: create a junction ----
 :make_junction
 set "LINK=%~1"
-set "TARGET=%~2"
+set "JUNCTION_TARGET=%~2"
 
 if exist "%LINK%" (
     rmdir "%LINK%" 2>nul
@@ -69,8 +90,8 @@ if exist "%LINK%" (
     )
 )
 
-powershell -NoProfile -Command "New-Item -ItemType Junction -Path '%LINK%' -Target '%TARGET%' | Out-Null"
-echo Created junction: %LINK% -^> %TARGET%
+powershell -NoProfile -Command "New-Item -ItemType Junction -Path '%LINK%' -Target '%JUNCTION_TARGET%' | Out-Null"
+echo Created junction: %LINK% -^> %JUNCTION_TARGET%
 goto :eof
 
 REM ---- helper: copy licenses ----
@@ -88,9 +109,7 @@ for %%F in ("%SRC%\LICENSE*" "%SRC%\COPYING*" "%SRC%\LGPL*.txt" "%SRC%\GPL*.txt"
 )
 goto :eof
 
-REM ---- helper: overwrite ABI marker file inside a port directory ----
-REM Vcpkg hashes all files in the port dir; touching this marker forces
-REM a new ABI hash on every run, so ports are rebuilt from current sources.
+REM ---- helper: overwrite ABI marker ----
 :touch_marker
 set "PORT_DIR=%~1"
 if not exist "%PORT_DIR%" (
@@ -132,7 +151,7 @@ if not defined SHA (
 echo [resolve] %NAME%: %SHA%
 goto :eof
 
-REM ---- helper: remove brazier archives from binary cache ----
+REM ---- helper: remove brazier archives ----
 :clean_archives
 echo Cleaning brazier archives...
 powershell -NoProfile -Command ^

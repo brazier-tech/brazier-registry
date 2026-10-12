@@ -100,7 +100,7 @@ cmake --build build
 ### Case B — framework developer
 
 GOAL: build brazier from local source code (not from git)
-PRECONDITIONS: four repositories are cloned side by side:
+PRECONDITIONS: All the repositories that you need are cloned side by side:
 
 ```text
 YourPath/
@@ -113,27 +113,46 @@ YourPath/
 STEPS:
 
 ```powershell
-# Windows platform 
-cd brazier-registry 
-.\build.bat 
+# Windows platform
+cd brazier-registry
+.\build.bat # all packages of brazier
+.\build.bat brazier-core # only core
+.\build.bat brazier-orm # only orm
+.\build.bat brazier-logger # only logger
+# e.t.c.
 ```
 
 ```shell
-#Linux/macOS: 
-cd brazier-registry 
-chmod +x build.sh 
-./build.sh 
+# Linux/macOS
+cd brazier-registry
+chmod +x build.sh
+./build.sh # all packages of brazier
+./build.sh brazier-core # only core
+./build.sh brazier-orm # only orm
+./build.sh brazier-logger # only logger
+# e.t.c.
 ```
 
-EFFECT:
+EFFECT (when no argument is given):
 
-1. junction/symlink: ports/*/source → upstream repositories
+1. junction/symlink: ports//source -> upstream repositories
 2. copy LICENSE files into port directories
-3. touch _abi_marker.txt (force ABI hash change)
-4. clean vcpkg cache (archives, buildtrees, packages)
-5. vcpkg install --editable --no-binarycaching
+3. resolve upstream master SHAs into ports//_resolved_ref.cmake
+4. touch _abi_marker.txt (force ABI hash change)
+5. clean vcpkg cache (archives, buildtrees, packages)
+6. vcpkg remove + install --editable --no-binarycaching
 
-RESULT: your project uses freshly built brazier from LOCAL sources
+EFFECT (when target port is given, e.g. brazier-orm):
+
+1-3. same as above (cheap, always run)
+4. touch _abi_marker.txt only for the target port
+5. clean buildtrees/packages only for the target port
+6. vcpkg install <target> --recurse --editable
+dependencies with unchanged ABI are skipped by vcpkg
+
+RESULT:
+your project uses freshly built brazier from LOCAL sources
+single-port rebuild takes seconds instead of minutes
 
 ## CMake API
 

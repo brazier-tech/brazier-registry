@@ -11,6 +11,19 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCES_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PORTS_PATH="${SCRIPT_DIR}/ports"
 
+# --- target selection ---
+TARGET="${1:-brazier}"
+
+case "$TARGET" in
+    brazier|brazier-core|brazier-orm|brazier-logger) ;;
+    *)
+        echo "Unknown target: $TARGET"
+        echo "Valid: brazier | brazier-core | brazier-orm | brazier-logger"
+        exit 1
+        ;;
+esac
+echo "=== Target: $TARGET ==="
+
 resolve_ref() {
     local name="$1" url="$2" var_name=""
     case "$name" in
@@ -47,16 +60,12 @@ copy_licenses() {
     shopt -u nullglob
 }
 
-# Vcpkg hashes all files in the port dir; overwriting this marker forces
-# a new ABI hash on every run, so ports are rebuilt from current sources.
-# We use >> / overwrite semantics: the file always contains a single line.
 touch_marker() {
     local port_dir="$1"
     if [ ! -d "$port_dir" ]; then
         echo "Warning: port dir not found: $port_dir"
         return
     fi
-    # Nanoseconds guarantee uniqueness even on very fast consecutive runs.
     printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$(date '+%N')" \
         > "$port_dir/_abi_marker.txt"
     echo "Touched ABI marker: $port_dir/_abi_marker.txt"
@@ -103,25 +112,30 @@ resolve_ref "brazier-orm"    "https://github.com/brazier-tech/brazierORM.git"
 # --- helpers ---
 "$VCPKG_PATH/vcpkg" install vcpkg-cmake vcpkg-cmake-config --recurse
 
-# --- invalidate ABI hash so vcpkg rebuilds from current sources ---
-touch_marker "${PORTS_PATH}/brazier"
-touch_marker "${PORTS_PATH}/brazier-core"
-touch_marker "${PORTS_PATH}/brazier-orm"
-touch_marker "${PORTS_PATH}/brazier-logger"
+# --- invalidate ABI hash ---
+if [ "$TARGET" = "brazier" ]; then
+    touch_marker "${PORTS_PATH}/brazier"
+    touch_marker "${PORTS_PATH}/brazier-core"
+    touch_marker "${PORTS_PATH}/brazier-orm"
+    touch_marker "${PORTS_PATH}/brazier-logger"
+else
+    touch_marker "${PORTS_PATH}/${TARGET}"
+fi
 
-# --- full clean for each brazier port ---
-clean_archives
-clean_port brazier
-clean_port brazier-core
-clean_port brazier-orm
-clean_port brazier-logger
+# --- clean ---
+if [ "$TARGET" = "brazier" ]; then
+    clean_archives
+    clean_port brazier
+    clean_port brazier-core
+    clean_port brazier-orm
+    clean_port brazier-logger
+else
+    clean_port "$TARGET"
+fi
 
 # --- remove old installs ---
-"$VCPKG_PATH/vcpkg" remove brazier-logger:x64-windows --recurse --purge
-"$VCPKG_PATH/vcpkg" remove brazier-orm:x64-windows    --recurse --purge
-"$VCPKG_PATH/vcpkg" remove brazier-core:x64-windows   --recurse --purge
-"$VCPKG_PATH/vcpkg" remove brazier:x64-windows        --recurse --purge
+"$VCPKG_PATH/vcpkg" remove "${TARGET}:x64-windows" --recurse --purge 2>/dev/null || true
 
-# --- install all brazier packages in one plan ---
+# --- install ---
 "$VCPKG_PATH/vcpkg" install --overlay-ports="$PORTS_PATH" \
-    brazier --recurse --editable --no-binarycaching
+    "$TARGET" --recurse --editable --no-binarycaching
