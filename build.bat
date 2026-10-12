@@ -45,16 +45,7 @@ REM --- remove old installs ---
 "%VCPKG_PATH%\vcpkg.exe" remove brazier-core:x64-windows   --recurse --purge
 "%VCPKG_PATH%\vcpkg.exe" remove brazier:x64-windows        --recurse --purge
 
-REM --- install each port separately in editable mode ---
-"%VCPKG_PATH%\vcpkg.exe" install --overlay-ports="%PORTS_PATH%" ^
-    brazier-logger --recurse --editable --no-binarycaching
-
-"%VCPKG_PATH%\vcpkg.exe" install --overlay-ports="%PORTS_PATH%" ^
-    brazier-core --recurse --editable --no-binarycaching
-
-"%VCPKG_PATH%\vcpkg.exe" install --overlay-ports="%PORTS_PATH%" ^
-    brazier-orm --recurse --editable --no-binarycaching
-
+REM --- install all brazier packages in one plan ---
 "%VCPKG_PATH%\vcpkg.exe" install --overlay-ports="%PORTS_PATH%" ^
     brazier --recurse --editable --no-binarycaching
 

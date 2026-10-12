@@ -58,7 +58,6 @@ clean_port() {
 
 clean_archives() {
     echo "Cleaning brazier archives..."
-    # На Linux/macOS пути разные. Проверь свой.
     for cache_dir in \
         "${HOME}/.cache/vcpkg/archives" \
         "${HOME}/.vcpkg/archives" \
@@ -103,15 +102,6 @@ clean_port brazier-logger
 "$VCPKG_PATH/vcpkg" remove brazier-core:x64-windows   --recurse --purge
 "$VCPKG_PATH/vcpkg" remove brazier:x64-windows        --recurse --purge
 
-# --- install each port separately in editable mode ---
-"$VCPKG_PATH/vcpkg" install --overlay-ports="$PORTS_PATH" \
-    brazier-logger --recurse --editable --no-binarycaching
-
-"$VCPKG_PATH/vcpkg" install --overlay-ports="$PORTS_PATH" \
-    brazier-core --recurse --editable --no-binarycaching
-
-"$VCPKG_PATH/vcpkg" install --overlay-ports="$PORTS_PATH" \
-    brazier-orm --recurse --editable --no-binarycaching
-
+# --- install all brazier packages in one plan ---
 "$VCPKG_PATH/vcpkg" install --overlay-ports="$PORTS_PATH" \
     brazier --recurse --editable --no-binarycaching
