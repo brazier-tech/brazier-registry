@@ -1,9 +1,14 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
+set(BRAZIER_ORM_REF_DEFAULT "0000000000000000000000000000000000000000")
+
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/_resolved_ref.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/_resolved_ref.cmake")
+endif()
 
 if(DEFINED ENV{BRAZIER_ORM_REF} AND NOT "$ENV{BRAZIER_ORM_REF}" STREQUAL "")
     set(BRAZIER_ORM_REF "$ENV{BRAZIER_ORM_REF}")
 else()
-    set(BRAZIER_ORM_REF "master")
+    set(BRAZIER_ORM_REF "${BRAZIER_ORM_REF_DEFAULT}")
 endif()
 
 message(STATUS "brazier-orm: REF = ${BRAZIER_ORM_REF}")

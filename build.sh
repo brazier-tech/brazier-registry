@@ -11,6 +11,21 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCES_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PORTS_PATH="${SCRIPT_DIR}/ports"
 
+resolve_ref() {
+    local name="$1" url="$2" var_name=""
+    case "$name" in
+        brazier-logger) var_name="BRAZIER_LOGGER_REF_DEFAULT" ;;
+        brazier-core)   var_name="BRAZIER_CORE_REF_DEFAULT" ;;
+        brazier-orm)    var_name="BRAZIER_ORM_REF_DEFAULT" ;;
+        *) return ;;
+    esac
+    local sha
+    sha=$(git ls-remote "$url" refs/heads/master 2>/dev/null | awk '{print $1}' | head -1)
+    [ -z "$sha" ] && return
+    printf 'set(%s "%s")\n' "$var_name" "$sha" > "${PORTS_PATH}/${name}/_resolved_ref.cmake"
+    echo "[resolve] $name: $sha"
+}
+
 make_symlink() {
     local link="$1"; local target="$2"
     if [ -L "$link" ] && [ "$(readlink "$link")" = "$target" ]; then
@@ -79,6 +94,11 @@ copy_licenses "${SOURCES_DIR}/brazier"        "${PORTS_PATH}/brazier"
 copy_licenses "${SOURCES_DIR}/brazier"        "${PORTS_PATH}/brazier-core"
 copy_licenses "${SOURCES_DIR}/brazierORM"     "${PORTS_PATH}/brazier-orm"
 copy_licenses "${SOURCES_DIR}/brazier-logger" "${PORTS_PATH}/brazier-logger"
+
+# --- resolve upstream REFs ---
+resolve_ref "brazier-logger" "https://github.com/brazier-tech/brazier-logger.git"
+resolve_ref "brazier-core"   "https://github.com/brazier-tech/brazier.git"
+resolve_ref "brazier-orm"    "https://github.com/brazier-tech/brazierORM.git"
 
 # --- helpers ---
 "$VCPKG_PATH/vcpkg" install vcpkg-cmake vcpkg-cmake-config --recurse

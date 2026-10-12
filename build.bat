@@ -23,6 +23,11 @@ call :copy_licenses "%SOURCES_DIR%\brazier"        "%PORTS_PATH%\brazier-core"
 call :copy_licenses "%SOURCES_DIR%\brazierORM"     "%PORTS_PATH%\brazier-orm"
 call :copy_licenses "%SOURCES_DIR%\brazier-logger" "%PORTS_PATH%\brazier-logger"
 
+REM --- resolve upstream REFs ---
+call :resolve_ref brazier-logger "https://github.com/brazier-tech/brazier-logger.git"
+call :resolve_ref brazier-core   "https://github.com/brazier-tech/brazier.git"
+call :resolve_ref brazier-orm    "https://github.com/brazier-tech/brazierORM.git"
+
 REM --- helpers ---
 "%VCPKG_PATH%\vcpkg.exe" install vcpkg-cmake vcpkg-cmake-config --recurse
 
@@ -104,6 +109,27 @@ rmdir /s /q "%VCPKG_PATH%\buildtrees\%PORT%" 2>nul
 rmdir /s /q "%VCPKG_PATH%\packages\%PORT%_x64-windows" 2>nul
 rmdir /s /q "%VCPKG_PATH%\packages\%PORT%_x64-windows-dbg" 2>nul
 rmdir /s /q "%VCPKG_PATH%\packages\%PORT%_x64-windows-rel" 2>nul
+goto :eof
+
+:resolve_ref
+set "NAME=%~1"
+set "URL=%~2"
+set "VAR_NAME="
+if /i "%NAME%"=="brazier-logger" set "VAR_NAME=BRAZIER_LOGGER_REF_DEFAULT"
+if /i "%NAME%"=="brazier-core"   set "VAR_NAME=BRAZIER_CORE_REF_DEFAULT"
+if /i "%NAME%"=="brazier-orm"    set "VAR_NAME=BRAZIER_ORM_REF_DEFAULT"
+if not defined VAR_NAME goto :eof
+
+set "SHA="
+for /f "usebackq tokens=1" %%H in (`git ls-remote "%URL%" refs/heads/master 2^>nul`) do (
+    if not defined SHA set "SHA=%%H"
+)
+if not defined SHA (
+    echo [resolve] %NAME%: failed
+    goto :eof
+)
+> "%PORTS_PATH%\%NAME%\_resolved_ref.cmake" echo set(%VAR_NAME% "%SHA%")
+echo [resolve] %NAME%: %SHA%
 goto :eof
 
 REM ---- helper: remove brazier archives from binary cache ----

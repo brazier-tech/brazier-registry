@@ -1,9 +1,14 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
+set(BRAZIER_CORE_REF_DEFAULT "0000000000000000000000000000000000000000")
+
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/_resolved_ref.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/_resolved_ref.cmake")
+endif()
 
 if(DEFINED ENV{BRAZIER_CORE_REF} AND NOT "$ENV{BRAZIER_CORE_REF}" STREQUAL "")
     set(BRAZIER_CORE_REF "$ENV{BRAZIER_CORE_REF}")
 else()
-    set(BRAZIER_CORE_REF "master")
+    set(BRAZIER_CORE_REF "${BRAZIER_CORE_REF_DEFAULT}")
 endif()
 
 message(STATUS "brazier-core: REF = ${BRAZIER_CORE_REF}")
