@@ -64,12 +64,15 @@ if /i "%TARGET%"=="brazier" (
     call :clean_port brazier-core
     call :clean_port brazier-orm
     call :clean_port brazier-logger
+
+    "%VCPKG_PATH%\vcpkg.exe" remove brazier-logger:x64-windows --recurse --purge 2>nul
+    "%VCPKG_PATH%\vcpkg.exe" remove brazier-orm:x64-windows    --recurse --purge 2>nul
+    "%VCPKG_PATH%\vcpkg.exe" remove brazier-core:x64-windows   --recurse --purge 2>nul
+    "%VCPKG_PATH%\vcpkg.exe" remove brazier:x64-windows        --recurse --purge 2>nul
 ) else (
     call :clean_port %TARGET%
+    "%VCPKG_PATH%\vcpkg.exe" remove %TARGET%:x64-windows --recurse --purge 2>nul
 )
-
-REM --- remove old installs ---
-"%VCPKG_PATH%\vcpkg.exe" remove %TARGET%:x64-windows --recurse --purge 2>nul
 
 REM --- install ---
 "%VCPKG_PATH%\vcpkg.exe" install --overlay-ports="%PORTS_PATH%" ^

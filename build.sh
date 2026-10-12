@@ -122,19 +122,22 @@ else
     touch_marker "${PORTS_PATH}/${TARGET}"
 fi
 
-# --- clean ---
+# --- clean + remove ---
 if [ "$TARGET" = "brazier" ]; then
     clean_archives
     clean_port brazier
     clean_port brazier-core
     clean_port brazier-orm
     clean_port brazier-logger
+
+    "$VCPKG_PATH/vcpkg" remove brazier-logger:x64-windows --recurse --purge 2>/dev/null || true
+    "$VCPKG_PATH/vcpkg" remove brazier-orm:x64-windows    --recurse --purge 2>/dev/null || true
+    "$VCPKG_PATH/vcpkg" remove brazier-core:x64-windows   --recurse --purge 2>/dev/null || true
+    "$VCPKG_PATH/vcpkg" remove brazier:x64-windows        --recurse --purge 2>/dev/null || true
 else
     clean_port "$TARGET"
+    "$VCPKG_PATH/vcpkg" remove "${TARGET}:x64-windows" --recurse --purge 2>/dev/null || true
 fi
-
-# --- remove old installs ---
-"$VCPKG_PATH/vcpkg" remove "${TARGET}:x64-windows" --recurse --purge 2>/dev/null || true
 
 # --- install ---
 "$VCPKG_PATH/vcpkg" install --overlay-ports="$PORTS_PATH" \
