@@ -95,19 +95,19 @@ clean_archives() {
 
 # --- symlinks ---
 make_symlink "${PORTS_PATH}/brazier-core/source"   "${SOURCES_DIR}/brazier"
-make_symlink "${PORTS_PATH}/brazier-orm/source"    "${SOURCES_DIR}/brazierORM"
+make_symlink "${PORTS_PATH}/brazier-orm/source"    "${SOURCES_DIR}/brazier-orm"
 make_symlink "${PORTS_PATH}/brazier-logger/source" "${SOURCES_DIR}/brazier-logger"
 
 # --- licenses ---
 copy_licenses "${SOURCES_DIR}/brazier"        "${PORTS_PATH}/brazier"
 copy_licenses "${SOURCES_DIR}/brazier"        "${PORTS_PATH}/brazier-core"
-copy_licenses "${SOURCES_DIR}/brazierORM"     "${PORTS_PATH}/brazier-orm"
+copy_licenses "${SOURCES_DIR}/brazier-orm"     "${PORTS_PATH}/brazier-orm"
 copy_licenses "${SOURCES_DIR}/brazier-logger" "${PORTS_PATH}/brazier-logger"
 
 # --- resolve upstream REFs ---
 resolve_ref "brazier-logger" "https://github.com/brazier-tech/brazier-logger.git"
 resolve_ref "brazier-core"   "https://github.com/brazier-tech/brazier.git"
-resolve_ref "brazier-orm"    "https://github.com/brazier-tech/brazierORM.git"
+resolve_ref "brazier-orm"    "https://github.com/brazier-tech/brazier-orm.git"
 
 # --- helpers ---
 "$VCPKG_PATH/vcpkg" install vcpkg-cmake vcpkg-cmake-config --recurse

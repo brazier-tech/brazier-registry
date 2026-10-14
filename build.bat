@@ -30,19 +30,19 @@ echo === Target: %TARGET% ===
 
 REM --- junctions ---
 call :make_junction "%PORTS_PATH%\brazier-core\source"   "%SOURCES_DIR%\brazier"
-call :make_junction "%PORTS_PATH%\brazier-orm\source"    "%SOURCES_DIR%\brazierORM"
+call :make_junction "%PORTS_PATH%\brazier-orm\source"    "%SOURCES_DIR%\brazier-orm"
 call :make_junction "%PORTS_PATH%\brazier-logger\source" "%SOURCES_DIR%\brazier-logger"
 
 REM --- licenses ---
 call :copy_licenses "%SOURCES_DIR%\brazier"        "%PORTS_PATH%\brazier"
 call :copy_licenses "%SOURCES_DIR%\brazier"        "%PORTS_PATH%\brazier-core"
-call :copy_licenses "%SOURCES_DIR%\brazierORM"     "%PORTS_PATH%\brazier-orm"
+call :copy_licenses "%SOURCES_DIR%\brazier-orm"     "%PORTS_PATH%\brazier-orm"
 call :copy_licenses "%SOURCES_DIR%\brazier-logger" "%PORTS_PATH%\brazier-logger"
 
 REM --- resolve upstream REFs ---
 call :resolve_ref brazier-logger "https://github.com/brazier-tech/brazier-logger.git"
 call :resolve_ref brazier-core   "https://github.com/brazier-tech/brazier.git"
-call :resolve_ref brazier-orm    "https://github.com/brazier-tech/brazierORM.git"
+call :resolve_ref brazier-orm    "https://github.com/brazier-tech/brazier-orm.git"
 
 REM --- helpers ---
 "%VCPKG_PATH%\vcpkg.exe" install vcpkg-cmake vcpkg-cmake-config --recurse
