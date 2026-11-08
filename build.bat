@@ -14,16 +14,16 @@ set PORTS_PATH=%SCRIPT_DIR%\ports
 
 REM --- target selection ---
 set "TARGET=%~1"
-if "%TARGET%"=="" set "TARGET=brazier"
+if "%TARGET%"=="" set "TARGET=all"
 
 set "VALID=0"
-if /i "%TARGET%"=="brazier"        set "VALID=1"
+if /i "%TARGET%"=="all"            set "VALID=1"
 if /i "%TARGET%"=="brazier-core"   set "VALID=1"
 if /i "%TARGET%"=="brazier-orm"    set "VALID=1"
 if /i "%TARGET%"=="brazier-logger" set "VALID=1"
 if "%VALID%"=="0" (
     echo Unknown target: %TARGET%
-    echo Valid: brazier ^| brazier-core ^| brazier-orm ^| brazier-logger
+    echo Valid: all ^| brazier-core ^| brazier-orm ^| brazier-logger
     exit /b 1
 )
 echo === Target: %TARGET% ===
@@ -34,7 +34,6 @@ call :make_junction "%PORTS_PATH%\brazier-orm\source"    "%SOURCES_DIR%\brazier-
 call :make_junction "%PORTS_PATH%\brazier-logger\source" "%SOURCES_DIR%\brazier-logger"
 
 REM --- licenses ---
-call :copy_licenses "%SOURCES_DIR%\brazier"        "%PORTS_PATH%\brazier"
 call :copy_licenses "%SOURCES_DIR%\brazier"        "%PORTS_PATH%\brazier-core"
 call :copy_licenses "%SOURCES_DIR%\brazier-orm"     "%PORTS_PATH%\brazier-orm"
 call :copy_licenses "%SOURCES_DIR%\brazier-logger" "%PORTS_PATH%\brazier-logger"
@@ -48,8 +47,7 @@ REM --- helpers ---
 "%VCPKG_PATH%\vcpkg.exe" install vcpkg-cmake vcpkg-cmake-config --recurse
 
 REM --- invalidate ABI hash so vcpkg rebuilds from current sources ---
-if /i "%TARGET%"=="brazier" (
-    call :touch_marker "%PORTS_PATH%\brazier"
+if /i "%TARGET%"=="all" (
     call :touch_marker "%PORTS_PATH%\brazier-core"
     call :touch_marker "%PORTS_PATH%\brazier-orm"
     call :touch_marker "%PORTS_PATH%\brazier-logger"
@@ -58,9 +56,8 @@ if /i "%TARGET%"=="brazier" (
 )
 
 REM --- clean ---
-if /i "%TARGET%"=="brazier" (
-    call :clean_archives
-    call :clean_port brazier
+call :clean_archives
+if /i "%TARGET%"=="all" (
     call :clean_port brazier-core
     call :clean_port brazier-orm
     call :clean_port brazier-logger
@@ -68,15 +65,19 @@ if /i "%TARGET%"=="brazier" (
     "%VCPKG_PATH%\vcpkg.exe" remove brazier-logger:x64-windows --recurse --purge 2>nul
     "%VCPKG_PATH%\vcpkg.exe" remove brazier-orm:x64-windows    --recurse --purge 2>nul
     "%VCPKG_PATH%\vcpkg.exe" remove brazier-core:x64-windows   --recurse --purge 2>nul
-    "%VCPKG_PATH%\vcpkg.exe" remove brazier:x64-windows        --recurse --purge 2>nul
 ) else (
     call :clean_port %TARGET%
     "%VCPKG_PATH%\vcpkg.exe" remove %TARGET%:x64-windows --recurse --purge 2>nul
 )
 
 REM --- install ---
-"%VCPKG_PATH%\vcpkg.exe" install --overlay-ports="%PORTS_PATH%" ^
-    %TARGET% --recurse --editable --no-binarycaching
+if /i "%TARGET%"=="all" (
+    "%VCPKG_PATH%\vcpkg.exe" install --overlay-ports="%PORTS_PATH%" ^
+        brazier-core brazier-orm brazier-logger --recurse --editable --no-binarycaching
+) else (
+    "%VCPKG_PATH%\vcpkg.exe" install --overlay-ports="%PORTS_PATH%" ^
+        %TARGET% --recurse --editable --no-binarycaching
+)
 
 endlocal
 goto :eof

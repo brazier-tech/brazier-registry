@@ -12,13 +12,13 @@ SOURCES_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PORTS_PATH="${SCRIPT_DIR}/ports"
 
 # --- target selection ---
-TARGET="${1:-brazier}"
+TARGET="${1:-all}"
 
 case "$TARGET" in
-    brazier|brazier-core|brazier-orm|brazier-logger) ;;
+    all|brazier-core|brazier-orm|brazier-logger) ;;
     *)
         echo "Unknown target: $TARGET"
-        echo "Valid: brazier | brazier-core | brazier-orm | brazier-logger"
+        echo "Valid: all | brazier-core | brazier-orm | brazier-logger"
         exit 1
         ;;
 esac
@@ -99,7 +99,6 @@ make_symlink "${PORTS_PATH}/brazier-orm/source"    "${SOURCES_DIR}/brazier-orm"
 make_symlink "${PORTS_PATH}/brazier-logger/source" "${SOURCES_DIR}/brazier-logger"
 
 # --- licenses ---
-copy_licenses "${SOURCES_DIR}/brazier"        "${PORTS_PATH}/brazier"
 copy_licenses "${SOURCES_DIR}/brazier"        "${PORTS_PATH}/brazier-core"
 copy_licenses "${SOURCES_DIR}/brazier-orm"     "${PORTS_PATH}/brazier-orm"
 copy_licenses "${SOURCES_DIR}/brazier-logger" "${PORTS_PATH}/brazier-logger"
@@ -113,8 +112,7 @@ resolve_ref "brazier-orm"    "https://github.com/brazier-tech/brazier-orm.git"
 "$VCPKG_PATH/vcpkg" install vcpkg-cmake vcpkg-cmake-config --recurse
 
 # --- invalidate ABI hash ---
-if [ "$TARGET" = "brazier" ]; then
-    touch_marker "${PORTS_PATH}/brazier"
+if [ "$TARGET" = "all" ]; then
     touch_marker "${PORTS_PATH}/brazier-core"
     touch_marker "${PORTS_PATH}/brazier-orm"
     touch_marker "${PORTS_PATH}/brazier-logger"
@@ -123,9 +121,8 @@ else
 fi
 
 # --- clean + remove ---
-if [ "$TARGET" = "brazier" ]; then
-    clean_archives
-    clean_port brazier
+clean_archives
+if [ "$TARGET" = "all" ]; then
     clean_port brazier-core
     clean_port brazier-orm
     clean_port brazier-logger
@@ -133,12 +130,16 @@ if [ "$TARGET" = "brazier" ]; then
     "$VCPKG_PATH/vcpkg" remove brazier-logger:x64-windows --recurse --purge 2>/dev/null || true
     "$VCPKG_PATH/vcpkg" remove brazier-orm:x64-windows    --recurse --purge 2>/dev/null || true
     "$VCPKG_PATH/vcpkg" remove brazier-core:x64-windows   --recurse --purge 2>/dev/null || true
-    "$VCPKG_PATH/vcpkg" remove brazier:x64-windows        --recurse --purge 2>/dev/null || true
 else
     clean_port "$TARGET"
     "$VCPKG_PATH/vcpkg" remove "${TARGET}:x64-windows" --recurse --purge 2>/dev/null || true
 fi
 
 # --- install ---
-"$VCPKG_PATH/vcpkg" install --overlay-ports="$PORTS_PATH" \
-    "$TARGET" --recurse --editable --no-binarycaching
+if [ "$TARGET" = "all" ]; then
+    "$VCPKG_PATH/vcpkg" install --overlay-ports="$PORTS_PATH" \
+        brazier-core brazier-orm brazier-logger --recurse --editable --no-binarycaching
+else
+    "$VCPKG_PATH/vcpkg" install --overlay-ports="$PORTS_PATH" \
+        "$TARGET" --recurse --editable --no-binarycaching
+fi
